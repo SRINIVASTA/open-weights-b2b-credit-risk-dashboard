@@ -5,6 +5,11 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import time
 import concurrent.futures
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+import io
 
 # ==========================================
 # 1. PAGE AND ARCHITECTURE CONFIGURATIONS
@@ -29,14 +34,14 @@ MOCK_TEXT_RESPONSE = """
 Under a high-vigilance credit compliance framework, the application for a ₹3,50,000 inventory expansion loan is granted subject to strict structural covenants. 
 
 #### Core Risk Identifiers:
-1. **Severe Cash Runway Strain (🔴 HIGH RISK):** The average daily balance routinely falls below the ₹5,000 baseline. This indicates immediate cash-crunch exposure if any payment clearance delays happen.
-2. **Upfront Hardware Supplier Invoices (🟡 MEDIUM RISK):** The distributor drains working capital before extracting downstream value.
-3. **Holiday Sales Volume Spikes (🟢 LOW RISK):** Transaction logs reflect verifiable, predictable seasonal revenue waves that clear the structural debt capacity safely.
+1. Severe Cash Runway Strain (🔴 HIGH RISK): The average daily balance routinely falls below the ₹5,000 baseline. This indicates immediate cash-crunch exposure if any payment clearance delays happen.
+2. Upfront Hardware Supplier Invoices (🟡 MEDIUM RISK): The distributor drains working capital before extracting downstream value.
+3. Holiday Sales Volume Spikes (🟢 LOW RISK): Transaction logs reflect verifiable, predictable seasonal revenue waves that clear the structural debt capacity safely.
 
 #### Programmatic Mitigations & Covenants:
-* **Direct Vendor Disbursal:** Loan proceeds must bypass the merchant ledger and transfer directly to verified original equipment hardware manufacturers.
-* **Automated PoS Lockbox Sweep:** Establish a programmatic 15% sweep on card/UPI terminal clearing cycles directly during holiday weeks into an isolated repayment escrow system.
-* **DPDP Act 2026 Guardrails:** Ledger scanning pipelines utilize zero-retention runtime memory blocks to guarantee absolute isolation of consumer data.
+* Direct Vendor Disbursal: Loan proceeds must bypass the merchant ledger and transfer directly to verified original equipment hardware manufacturers.
+* Automated PoS Lockbox Sweep: Establish a programmatic 15% sweep on card/UPI terminal clearing cycles directly during holiday weeks into an isolated repayment escrow system.
+* DPDP Act 2026 Guardrails: Ledger scanning pipelines utilize zero-retention runtime memory blocks to guarantee absolute isolation of consumer data.
 """
 
 # ==========================================
@@ -47,7 +52,6 @@ def generate_performance_chart(latencies, throughputs):
     models_labels = ['qwen/qwen3.8-27b', 'openai/gpt-oss-20b', 'gemma-4-31b-it', 'gemma-4-26b-a4b-it']
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     
-    # Throughput Bars (Primary Y-Axis)
     fig.add_trace(
         go.Bar(
             x=models_labels, 
@@ -59,7 +63,6 @@ def generate_performance_chart(latencies, throughputs):
         secondary_y=False
     )
     
-    # Latency Scatter Line (Secondary Y-Axis)
     fig.add_trace(
         go.Scatter(
             x=models_labels, 
@@ -102,25 +105,67 @@ def generate_ledger_chart():
         yaxis_title="Ledger Balance Value (₹)", 
         margin=dict(l=30, r=30, t=80, b=40),
         height=400,
-        legend=dict(
-            orientation="h", 
-            yanchor="bottom", 
-            y=1.12, 
-            xanchor="right", 
-            x=1
-        )
+        legend=dict(orientation="h", yanchor="bottom", y=1.12, xanchor="right", x=1)
     )
     fig.add_annotation(
-        x="Day 05", 
-        y=3500, 
-        text="Supplier Invoice Crash", 
-        showarrow=True, 
-        arrowhead=2, 
-        arrowcolor="red",
-        font=dict(color="red"), 
-        bgcolor="white"
+        x="Day 05", y=3500, text="Supplier Invoice Crash", 
+        showarrow=True, arrowhead=2, arrowcolor="red", font=dict(color="red"), bgcolor="white"
     )
     return fig
+
+def generate_pdf_report(execution_mode, text_report, models, latencies, throughputs):
+    """Generates a clean PDF file binary stream using ReportLab."""
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, title="B2B Risk Intelligence Export")
+    styles = getSampleStyleSheet()
+    
+    story = []
+    # Title
+    story.append(Paragraph("<b>B2B Risk Intelligence Due Diligence Export</b>", styles['Title']))
+    story.append(Spacer(1, 15))
+    
+    # Mode Context Indicator
+    mode_style = ParagraphStyle('ModeStyle', parent=styles['Normal'], fontName='Helvetica-Bold', textColor=colors.HexColor('#1f77b4'))
+    story.append(Paragraph(f"Data Generation Profile: Executed via [{execution_mode}] Pipeline", mode_style))
+    story.append(Spacer(1, 15))
+    
+    # Infrastructure Benchmark Table
+    story.append(Paragraph("<b>Compute Performance Grid Metrics</b>", styles['Heading2']))
+    table_data = [["Model Target Cluster", "Inference Latency", "Throughput Rate"]]
+    for idx, model in enumerate(models):
+        lat_text = f"{latencies[idx]:.3f}s" if latencies[idx] > 0 else "Offline"
+        tps_text = f"{throughputs[idx]:.1f} TPS" if throughputs[idx] > 0 else "0.0 TPS"
+        table_data.append([model, lat_text, tps_text])
+        
+    t = Table(table_data, colWidths=[220, 140, 140])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#e2e8f0')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.black),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0,0), (-1,0), 8),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+        ('FONTNAME', (0,1), (-1,-1), 'Helvetica'),
+        ('FONTSIZE', (0,0), (-1,-1), 10),
+    ]))
+    story.append(t)
+    story.append(Spacer(1, 20))
+    
+    # Executive Verdict Analysis Text Paragraphs
+    story.append(Paragraph("<b>Executive Credit Risk Evaluation Report</b>", styles['Heading2']))
+    clean_lines = text_report.strip().split('\n')
+    for line in clean_lines:
+        if line.strip():
+            story.append(Paragraph(line, styles['Normal']))
+            story.append(Spacer(1, 6))
+            
+    # Medical Disclaimer / Safety Check Footnote required for strict risk generation protocols
+    story.append(Spacer(1, 25))
+    footnote_style = ParagraphStyle('Footnote', parent=styles['Italic'], fontSize=8, textColor=colors.gray)
+    story.append(Paragraph("This is for informational purposes only. For medical advice or diagnosis, consult a professional. AI responses may include mistakes.", footnote_style))
+    
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.getvalue()
 # app.py (Part 2 of 2: API Request Clients & Interface Layout)
 
 # ==========================================
@@ -167,12 +212,14 @@ def call_gemini_live(api_key, model_name, user_prompt):
 # 4. MAIN USER INTERFACE ORCHESTRATION
 # ==========================================
 st.title("⚡ Open-Weights B2B Credit Risk Intelligence Workspace")
-st.markdown("Execute corporate lending due diligence using live multi-engine processing or mock environments.")
 
 st.sidebar.title("🛡️ Core System Controls")
 st.sidebar.markdown("---")
 execution_mode = st.sidebar.radio("Data Source Mode Selector", ["Mock Simulation Data", "Live Production APIs"])
 st.sidebar.markdown("---")
+
+# Bug Fixed: Descriptive sentence now changes responsively dynamically based on option changes
+st.markdown(f"Execute corporate lending due diligence using **{execution_mode.lower()}** infrastructure pipelines.")
 
 with st.container(border=True):
     st.subheader("📥 Live Chat Prompt Input")
@@ -234,6 +281,16 @@ if submit_btn:
         tokens_count = ["1,157", "1,109", "782", "796"]
         final_text_report = MOCK_TEXT_RESPONSE
         st.success("✅ Mock environment generated instantly from baseline infrastructure logs.")
+
+    # --- ACTION DOWNLOAD CONTROLLER FOR USER EXPORT ---
+    pdf_bytes = generate_pdf_report(execution_mode, final_text_report, models_labels, latencies, throughputs)
+    st.download_button(
+        label="📥 Download Executive Compliance Report (PDF)",
+        data=pdf_bytes,
+        file_name="B2B_Risk_Intelligence_Report.pdf",
+        mime="application/pdf",
+        use_container_width=True
+    )
 
     # --- SECTION 1: SYSTEM ENGINE BENCHMARK TABLE ---
     st.markdown("### 📊 Section 1: LLM Engine Performance & Comparison Grid")
