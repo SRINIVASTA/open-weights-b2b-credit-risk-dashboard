@@ -100,12 +100,12 @@ def generate_ledger_chart():
         title="<b>30-Day Distributor Working Capital Volatility Curve</b>",
         xaxis_title="Billing Cycle Day", 
         yaxis_title="Ledger Balance Value (₹)", 
-        margin=dict(l=30, r=30, t=80, b=40), # Pushed top margin down to make room
-        height=400, # Expanded height slightly for cleaner scaling
+        margin=dict(l=30, r=30, t=80, b=40),
+        height=400,
         legend=dict(
             orientation="h", 
             yanchor="bottom", 
-            y=1.12, # Shifted up to clear text overlap
+            y=1.12, 
             xanchor="right", 
             x=1
         )
@@ -255,11 +255,8 @@ if submit_btn:
     col_out1, col_out2 = st.columns(2, gap="large")
     with col_out1:
         st.markdown("#### 🔍 Credit Risk Matrix & Executive Text Output")
-        st.markdown(f"""
-        <div style="background-color: #ffffff; padding: 25px; border: 1px solid #e2e8f0; border-radius: 8px; color: #1a202c; font-size:14px; line-height:1.6; min-height: 400px;">
-            {final_text_report}
-        </div>
-        """, unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown(final_text_report)
         
     with col_out2:
         st.markdown("#### 📉 Intramonth Ledger Simulation (Plotly Visualization)")
