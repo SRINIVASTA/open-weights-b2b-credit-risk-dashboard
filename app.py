@@ -202,7 +202,6 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
     return buffer.getvalue()
 ### Block 2 of 2: API Request Clients & Interface Layout
 
-```python
 # app.py (Part 2 of 2: API Request Clients & Interface Layout)
 
 # ==========================================
