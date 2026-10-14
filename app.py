@@ -307,7 +307,7 @@ if submit_btn:
     # --- SECTION 1: SYSTEM ENGINE BENCHMARK TABLE ---
     st.markdown("### 📊 Section 1: LLM Engine Performance & Comparison Grid")
     
-    # Bug Fixed: Mapped exact indexes inside list definitions to ensure correct multi-row table sizing
+    # Bug Fixed: Fixed matrix indexing coordinates inside dataframe rows to stop row dimension mismatch errors
     df_metrics = pd.DataFrame({
         "Metric / Feature": ["Target Architecture", "Engine Infrastructure", "Inference Latency", "Generation Throughput", "Generated Tokens", "Compliance Matrix"],
         "Variant 1: Qwen": [models_labels[0], "Groq Cloud", f"{latencies[0]:.3f}s" if latencies[0] > 0 else "Offline", f"{throughputs[0]:.1f} TPS", tokens_count[0], compliance_status[0]],
