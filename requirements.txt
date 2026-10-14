@@ -2,6 +2,6 @@ streamlit
 pandas
 plotly
 reportlab
-kaleido==0.1.0.post1
+matplotlib
 groq
 google-genai
