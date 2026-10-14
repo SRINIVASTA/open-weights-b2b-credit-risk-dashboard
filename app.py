@@ -5,12 +5,13 @@ import concurrent.futures
 import sys
 import os
 
-# Appends internal module paths to execution space
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Appends the src directory to Python's system search runtime environment path 
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src'))
 
-from config import DEFAULT_PROMPT, MOCK_TEXT_RESPONSE
-from visualizer import generate_performance_chart, generate_ledger_chart, generate_pdf_report
-from engine_clients import call_groq_live, call_gemini_live
+# Fixed: Explicitly added the package namespace modifier structure paths
+from src.config import DEFAULT_PROMPT, MOCK_TEXT_RESPONSE
+from src.visualizer import generate_performance_chart, generate_ledger_chart, generate_pdf_report
+from src.engine_clients import call_groq_live, call_gemini_live
 
 st.title("⚡ Open-Weights B2B Credit Risk Intelligence Workspace")
 
