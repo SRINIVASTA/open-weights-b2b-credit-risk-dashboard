@@ -93,7 +93,7 @@ def generate_performance_chart(latencies, throughputs):
 def generate_ledger_chart():
     """Simulates a 30-day corporate merchant ledger cash pipeline."""
     days = [f"Day {i:02d}" for i in range(1, 31)]
-    simulated_cash =
+    simulated_cash = [12000, 9500, 8000, 6200, 3500, 3800, 4100, 4200, 4000, 4500, 4300, 4800, 4600, 4900, 4700, 4800, 4600, 4900, 4800, 15000, 85000, 190000, 310000, 385000, 340000, 210000, 95000, 45000, 22000, 14000]
     critical_baseline = * 30
     
     fig = go.Figure()
