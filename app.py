@@ -104,7 +104,16 @@ def generate_ledger_chart():
         height=380,
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
     )
-    fig.add_annotation(x="Day 05", y=3500, text="Supplier Invoice Crash", showarrow=True, arrowhead=2, color="red", bgcolor="white")
+    fig.add_annotation(
+        x="Day 05", 
+        y=3500, 
+        text="Supplier Invoice Crash", 
+        showarrow=True, 
+        arrowhead=2, 
+        arrowcolor="red",
+        font=dict(color="red"), 
+        bgcolor="white"
+    )
     return fig
 # app.py (Part 2 of 2: API Request Clients & Interface Layout)
 
@@ -155,8 +164,7 @@ st.title("⚡ Open-Weights B2B Credit Risk Intelligence Workspace")
 st.markdown("Execute corporate lending due diligence using live multi-engine processing or mock environments.")
 
 st.sidebar.title("🛡️ Core System Controls")
-st.sidebar.markdown("---")
-execution_mode = st.sidebar.radio("Data Source Mode Selector", ["Mock Simulation Data", "Live Production APIs"])
+st.sidebar.sidebar_mode = st.sidebar.radio("Data Source Mode Selector", ["Mock Simulation Data", "Live Production APIs"])
 st.sidebar.markdown("---")
 
 with st.container(border=True):
@@ -172,7 +180,7 @@ if submit_btn:
     compliance_status = ["Isolated", "Isolated", "Isolated", "Isolated"]
     final_text_report = ""
     
-    if execution_mode == "Live Production APIs":
+    if st.sidebar.sidebar_mode == "Live Production APIs":
         try:
             groq_api_key = st.secrets["api_credentials"]["GROQ_API_KEY"]
             google_api_key = st.secrets["api_credentials"]["GEMINI_API_KEY"]
