@@ -12,14 +12,15 @@ from src.config import DEFAULT_PROMPT, MOCK_TEXT_RESPONSE
 from src.visualizer import generate_performance_chart, generate_ledger_chart, generate_pdf_report
 from src.engine_clients import call_groq_live, call_gemini_live
 
-# Custom CSS implementation: Adjusted left and right padding to exactly 1 inch (96px)
+# Custom CSS implementation: Restricts full width and gives a perfect 1-inch desktop layout border
 st.markdown("""
     <style>
         .block-container {
+            max-width: 1400px !important;
             padding-top: 1.5rem !important;
             padding-bottom: 1.5rem !important;
-            padding-left: 96px !important;
-            padding-right: 96px !important;
+            padding-left: 96px !important;  /* Exactly 1 inch padding from the sidebar */
+            padding-right: 96px !important; /* Exactly 1 inch padding from the right monitor bezel */
         }
     </style>
 """, unsafe_allow_html=True)
