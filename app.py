@@ -93,8 +93,12 @@ def generate_performance_chart(latencies, throughputs):
 def generate_ledger_chart():
     """Simulates a 30-day corporate merchant ledger cash pipeline."""
     days = [f"Day {i:02d}" for i in range(1, 31)]
-    # Bug Fix: Restored simulated data points sequence array
-    simulated_cash = [12000, 9500, 8000, 6200, 3500, 3800, 4100, 4200, 4000, 4500, 4300, 4800, 4600, 4900, 4700, 4800, 4600, 4900, 4800, 15000, 85000, 190000, 310000, 385000, 340000, 210000, 95000, 45000, 22000, 14000]
+    simulated_cash = [
+        12000, 9500, 8000, 6200, 3500, 3800, 4100, 4200, 4000, 4500,
+        4300, 4800, 4600, 4900, 4700, 4800, 4600, 4900, 4800, 15000,
+        85000, 190000, 310000, 385000, 340000, 210000, 95000, 45000,
+        22000, 14000
+    ]
     critical_baseline = [5000] * 30
     
     fig = go.Figure()
@@ -122,24 +126,21 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
     styles = getSampleStyleSheet()
     story = []
     
-    # Title Header
     story.append(Paragraph("<b>B2B Risk Intelligence Due Diligence Export</b>", styles['Title']))
     story.append(Spacer(1, 15))
     
-    # Mode Context Indicator
     mode_style = ParagraphStyle('ModeStyle', parent=styles['Normal'], fontName='Helvetica-Bold', textColor=colors.HexColor('#1f77b4'))
     story.append(Paragraph(f"Data Generation Profile: Executed via [{execution_mode}] Pipeline", mode_style))
     story.append(Spacer(1, 15))
     
-    # Metric Grid Data Table
     story.append(Paragraph("<b>Compute Performance Grid Metrics</b>", styles['Heading2']))
     table_data = [["Model Target Cluster", "Inference Latency", "Throughput Rate"]]
     for idx, model in enumerate(models):
         lat_text = f"{latencies[idx]:.3f}s" if latencies[idx] > 0 else "Offline"
-        tps_text = f"{throughputs[idx]:.1f} TPS" if throughputs[idx] > 0 else "0.0 TPS"
+        tps_text = f"{throughouts[idx]:.1f} TPS" if throughputs[idx] > 0 else "0.0 TPS"
         table_data.append([model, lat_text, tps_text])
         
-    t = Table(table_data, colWidths=[240, 130, 130])
+    t = Table(table_data, colWidths=[200, 140, 140])
     t.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#e2e8f0')),
         ('TEXTCOLOR', (0,0), (-1,0), colors.black),
@@ -151,7 +152,6 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
     story.append(t)
     story.append(Spacer(1, 20))
     
-    # Render and embed Plotly Performance Chart into the PDF pipeline stream
     try:
         img_bytes_perf = pio.to_image(fig_perf, format='png', width=540, height=280, engine="kaleido")
         story.append(Paragraph("<b>Visual Asset: Compute Performance Model</b>", styles['Heading3']))
@@ -160,7 +160,6 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
     except Exception as e:
         story.append(Paragraph(f"<i>Performance Graph Rendering Skipped: {str(e)}</i>", styles['Italic']))
         
-    # Render and embed Plotly Ledger Volatility Chart into the PDF pipeline stream
     try:
         img_bytes_ledger = pio.to_image(fig_ledger, format='png', width=540, height=280, engine="kaleido")
         story.append(Paragraph("<b>Visual Asset: Intramonth Ledger Simulation</b>", styles['Heading3']))
@@ -169,7 +168,6 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
     except Exception as e:
         story.append(Paragraph(f"<i>Ledger Graph Rendering Skipped: {str(e)}</i>", styles['Italic']))
         
-    # Executive Verdict Analysis Text Paragraphs
     story.append(Paragraph("<b>Executive Credit Risk Evaluation Report</b>", styles['Heading2']))
     clean_lines = text_report.strip().split('\n')
     for line in clean_lines:
@@ -177,7 +175,6 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
             story.append(Paragraph(line, styles['Normal']))
             story.append(Spacer(1, 6))
             
-    # Legal Disclaimer Footnote
     story.append(Spacer(1, 25))
     footnote_style = ParagraphStyle('Footnote', parent=styles['Italic'], fontSize=8, textColor=colors.gray)
     story.append(Paragraph("This is for informational purposes only. For medical advice or diagnosis, consult a professional. AI responses may include mistakes.", footnote_style))
@@ -263,10 +260,10 @@ if submit_btn:
         st.info("🔄 Querying 4 cloud engine streams concurrently via background threads...")
         
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            future_qwen = executor.submit(call_groq_live, groq_api_key, models_labels, user_query)
-            future_gpt = executor.submit(call_groq_live, groq_api_key, models_labels, user_query)
-            future_gemma_31b = executor.submit(call_gemini_live, google_api_key, models_labels, user_query)
-            future_gemma_26b = executor.submit(call_gemini_live, google_api_key, models_labels, user_query)
+            future_qwen = executor.submit(call_groq_live, groq_api_key, models_labels[0], user_query)
+            future_gpt = executor.submit(call_groq_live, groq_api_key, models_labels[1], user_query)
+            future_gemma_31b = executor.submit(call_gemini_live, google_api_key, models_labels[2], user_query)
+            future_gemma_26b = executor.submit(call_gemini_live, google_api_key, models_labels[3], user_query)
             
             res_qwen = future_qwen.result()
             res_gpt = future_gpt.result()
@@ -300,11 +297,9 @@ if submit_btn:
         final_text_report = MOCK_TEXT_RESPONSE
         st.success("✅ Mock environment generated instantly from baseline infrastructure logs.")
 
-    # Generate Figures for View and PDF Export Pipelines
     fig_perf = generate_performance_chart(latencies, throughputs)
     fig_ledger = generate_ledger_chart()
 
-    # Action Button Controller for PDF Export Payload Data Download
     pdf_bytes = generate_pdf_report(execution_mode, final_text_report, models_labels, latencies, throughputs, fig_perf, fig_ledger)
     st.download_button(
         label="📥 Download Executive Compliance Report (PDF)",
