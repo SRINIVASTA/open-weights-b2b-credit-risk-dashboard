@@ -164,7 +164,8 @@ st.title("⚡ Open-Weights B2B Credit Risk Intelligence Workspace")
 st.markdown("Execute corporate lending due diligence using live multi-engine processing or mock environments.")
 
 st.sidebar.title("🛡️ Core System Controls")
-st.sidebar.sidebar_mode = st.sidebar.radio("Data Source Mode Selector", ["Mock Simulation Data", "Live Production APIs"])
+st.sidebar.markdown("---")
+execution_mode = st.sidebar.radio("Data Source Mode Selector", ["Mock Simulation Data", "Live Production APIs"])
 st.sidebar.markdown("---")
 
 with st.container(border=True):
@@ -180,7 +181,7 @@ if submit_btn:
     compliance_status = ["Isolated", "Isolated", "Isolated", "Isolated"]
     final_text_report = ""
     
-    if st.sidebar.sidebar_mode == "Live Production APIs":
+    if execution_mode == "Live Production APIs":
         try:
             groq_api_key = st.secrets["api_credentials"]["GROQ_API_KEY"]
             google_api_key = st.secrets["api_credentials"]["GEMINI_API_KEY"]
