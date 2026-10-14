@@ -1,4 +1,4 @@
-# app.py
+# app.py (Four-Model Benchmarking Workspace)
 import streamlit as st
 import pandas as pd
 import concurrent.futures
@@ -42,44 +42,52 @@ if submit_btn:
             st.error("❌ Configuration Error: Missing `[api_credentials]` variables inside your Streamlit Secrets vault setup.")
             st.stop()
             
-        st.info("🔄 Querying cloud engines concurrently via background threads...")
+        st.info("🔄 Querying 4 cloud engine streams concurrently via background threads...")
         
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            # Running production proxies for the respective target configurations
-            future_qwen = executor.submit(call_groq_live, groq_api_key, "qwen-2.5-32b", user_query)
-            future_gpt = executor.submit(call_groq_live, groq_api_key, "llama3-70b-8192", user_query)
-            future_gemma = executor.submit(call_gemini_live, google_api_key, "gemini-1.5-pro", user_query)
+            # Running all four open-weights models in parallel
+            future_qwen = executor.submit(call_groq_live, groq_api_key, "qwen3.8-27b", user_query)
+            future_gpt = executor.submit(call_groq_live, groq_api_key, "gpt-oss-20b", user_query)
+            future_gemma_31b = executor.submit(call_gemini_live, google_api_key, "gemma-4-31b-it", user_query)
+            future_gemma_26b = executor.submit(call_gemini_live, google_api_key, "gemma-4-26b-a4b-it", user_query)
             
             res_qwen = future_qwen.result()
             res_gpt = future_gpt.result()
-            res_gemma = future_gemma.result()
+            res_gemma_31b = future_gemma_31b.result()
+            res_gemma_26b = future_gemma_26b.result()
 
-        if "error" in [res_qwen["status"], res_gpt["status"], res_gemma["status"]]:
-            st.error(f"API Rejection Flagged. Qwen: {res_qwen.get('error_msg')}, GPT: {res_gpt.get('error_msg')}, Gemma: {res_gemma.get('error_msg')}")
+        if "error" in [res_qwen["status"], res_gpt["status"], res_gemma_31b["status"], res_gemma_26b["status"]]:
+            st.error(f"❌ API Rejection Flagged.\n\n"
+                     f"**Qwen Status:** {res_qwen.get('error_msg', 'Success')}\n\n"
+                     f"**GPT-OSS Status:** {res_gpt.get('error_msg', 'Success')}\n\n"
+                     f"**Gemma-4 31B Status:** {res_gemma_31b.get('error_msg', 'Success')}\n\n"
+                     f"**Gemma-4 26B Status:** {res_gemma_26b.get('error_msg', 'Success')}")
             st.stop()
             
-        latencies = [res_qwen['latency'], res_gpt['latency'], res_gemma['latency']]
-        throughputs = [res_qwen['tps'], res_gpt['tps'], res_gemma['tps']]
-        tokens_count = [f"{res_qwen['tokens']:,}", f"{res_gpt['tokens']:,}", f"{res_gemma['tokens']:,}"]
+        latencies = [res_qwen['latency'], res_gpt['latency'], res_gemma_31b['latency'], res_gemma_26b['latency']]
+        throughputs = [res_qwen['tps'], res_gpt['tps'], res_gemma_31b['tps'], res_gemma_26b['tps']]
+        tokens_count = [f"{res_qwen['tokens']:,}", f"{res_gpt['tokens']:,}", f"{res_gemma_31b['tokens']:,}", f"{res_gemma_26b['tokens']:,}"]
         final_text_report = res_gpt['response']
         st.success(f"⚡ Live execution complete. Optimal latency registered in {res_gpt['latency']:.3f}s.")
         
     else:
-        # Load Baseline Static Mock Performance Metric Snaps
-        latencies = [2.926, 2.685, 85.194]
-        throughputs = [395.4, 413.0, 9.3]
-        tokens_count = ["1,157", "1,109", "796"]
+        # Load Baseline Static Mock Performance Metric Snaps (Updated for 4 metrics)
+        latencies = [2.926, 2.685, 87.412, 85.194]
+        throughputs = [395.4, 413.0, 8.9, 9.3]
+        tokens_count = ["1,157", "1,109", "782", "796"]
         final_text_report = MOCK_TEXT_RESPONSE
         st.success("✅ Mock environment generated instantly from baseline infrastructure logs.")
 
     # --- DISPLAY BLOCK 1: HARDWARE SYSTEM BENCHMARK COCKPIT ---
     st.markdown("### 📊 Section 1: LLM Engine Performance & Comparison Grid")
     
+    # Dynamically generated metrics mapping explicitly to correct array locations
     df_metrics = pd.DataFrame({
         "Metric / Feature": ["Target Architecture", "Engine Infrastructure", "Inference Latency", "Generation Throughput", "Generated Tokens", "Compliance Matrix"],
         "Variant 1: Qwen": ["qwen3.8-27b", "Groq Cloud", f"{latencies[0]:.3f}s", f"{throughputs[0]:.1f} TPS", tokens_count[0], "100% Isolated"],
         "Variant 2: GPT-OSS (Fastest)": ["gpt-oss-20b", "Groq Cloud", f"{latencies[1]:.3f}s", f"{throughputs[1]:.1f} TPS", tokens_count[1], "100% Isolated"],
-        "Variant 3: Gemma": ["gemma-4-26b-a4b-it", "Google AI Studio", f"{latencies[2]:.3f}s", f"{throughputs[2]:.1f} TPS", tokens_count[2], "100% Isolated"]
+        "Variant 3: Gemma 4 (31B)": ["gemma-4-31b-it", "Google AI Studio", f"{latencies[2]:.3f}s", f"{throughputs[2]:.1f} TPS", tokens_count[2], "100% Isolated"],
+        "Variant 4: Gemma 4 (26B)": ["gemma-4-26b-a4b-it", "Google AI Studio", f"{latencies[3]:.3f}s", f"{throughputs[3]:.1f} TPS", tokens_count[3], "100% Isolated"]
     })
     st.table(df_metrics)
     st.plotly_chart(generate_performance_chart(latencies, throughputs), use_container_width=True)
