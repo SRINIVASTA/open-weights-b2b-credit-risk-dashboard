@@ -38,8 +38,9 @@ def generate_performance_chart(latencies, throughputs):
 
 def generate_ledger_chart():
     days = [f"Day {i:02d}" for i in range(1, 31)]
-    simulated_cash =
-    critical_baseline = * 30
+    # Fixed: Restored the complete dataset array sequence here
+    simulated_cash = [12000, 9500, 8000, 6200, 3500, 3800, 4100, 4200, 4000, 4500, 4300, 4800, 4600, 4900, 4700, 4800, 4600, 4900, 4800, 15000, 85000, 190000, 310000, 385000, 340000, 210000, 95000, 45000, 22000, 14000]
+    critical_baseline = [5000] * 30
     
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=days, y=simulated_cash, name="Available Ledger Balance (INR)", mode="lines+markers", line=dict(color="#1f77b4", width=3)))
@@ -76,7 +77,7 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
         tps_text = f"{throughputs[idx]:.1f} TPS" if throughputs[idx] > 0 else "0.0 TPS"
         table_data.append([model, lat_text, tps_text])
         
-    t = Table(table_data, colWidths=)
+    t = Table(table_data, colWidths=[200, 150, 150])
     t.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#e2e8f0')),
         ('TEXTCOLOR', (0,0), (-1,0), colors.black),
@@ -106,7 +107,8 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
          pass
         
     try:
-        simulated_cash =
+        # Fixed: Restored the matching 30-day data timeline array inside report image generation
+        simulated_cash = [12000, 9500, 8000, 6200, 3500, 3800, 4100, 4200, 4000, 4500, 4300, 4800, 4600, 4900, 4700, 4800, 4600, 4900, 4800, 15000, 85000, 190000, 310000, 385000, 340000, 210000, 95000, 45000, 22000, 14000]
         plt.figure(figsize=(6, 3))
         plt.plot(range(1, 31), simulated_cash, marker='o', color='#1f77b4', linewidth=2)
         plt.axhline(y=5000, color='r', linestyle='--', label="Compliance Limit")
