@@ -12,6 +12,18 @@ from src.config import DEFAULT_PROMPT, MOCK_TEXT_RESPONSE
 from src.visualizer import generate_performance_chart, generate_ledger_chart, generate_pdf_report
 from src.engine_clients import call_groq_live, call_gemini_live
 
+# Custom CSS implementation to perfectly align elements and adjust padding left offsets
+st.markdown("""
+    <style>
+        .block-container {
+            padding-top: 1.5rem !important;
+            padding-bottom: 1.5rem !important;
+            padding-left: 4.5rem !important;
+            padding-right: 4.5rem !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 st.title("⚡ Open-Weights B2B Credit Risk Intelligence Workspace")
 
 st.sidebar.title("🛡️ Core System Controls")
@@ -96,7 +108,7 @@ if submit_btn:
 
     st.markdown("### 📊 Section 1: LLM Engine Performance & Comparison Grid")
     
-    # Bug Fixed: Mapped precise indexes (0, 1, 2, 3) inside column lists to ensure clean dataframe rendering 
+    # Bug Fixed: Mapped list items correctly using row indices to resolve the TypeError loop crash
     df_metrics = pd.DataFrame({
         "Metric / Feature": ["Target Architecture", "Engine Infrastructure", "Inference Latency", "Generation Throughput", "Generated Tokens", "Compliance Matrix"],
         "Variant 1: Qwen": [models_labels[0], "Groq Cloud", f"{latencies[0]:.3f}s" if latencies[0] > 0 else "Offline", f"{throughputs[0]:.1f} TPS", tokens_count[0], compliance_status[0]],
