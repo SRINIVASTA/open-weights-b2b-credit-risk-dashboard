@@ -1,8 +1,7 @@
-# app.py (Four-Model Benchmarking Workspace)
+# app.py (Fully-Qualified Model Prefixes)
 import streamlit as st
 import pandas as pd
 import concurrent.futures
-# To this clean root-relative structure:
 from src.config import DEFAULT_PROMPT, MOCK_TEXT_RESPONSE
 from src.engine_clients import call_groq_live, call_gemini_live
 from src.visualizer import generate_performance_chart, generate_ledger_chart
@@ -46,11 +45,11 @@ if submit_btn:
         st.info("🔄 Querying 4 cloud engine streams concurrently via background threads...")
         
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            # Running all four open-weights models in parallel
-            future_qwen = executor.submit(call_groq_live, groq_api_key, "qwen3.8-27b", user_query)
-            future_gpt = executor.submit(call_groq_live, groq_api_key, "gpt-oss-20b", user_query)
-            future_gemma_31b = executor.submit(call_gemini_live, google_api_key, "gemma-4-31b-it", user_query)
-            future_gemma_26b = executor.submit(call_gemini_live, google_api_key, "gemma-4-26b-a4b-it", user_query)
+            # 🔄 FIX: Added organization prefixes ('qwen/', 'openai/', 'google/') to fix routing errors
+            future_qwen = executor.submit(call_groq_live, groq_api_key, "qwen/qwen3.8-27b", user_query)
+            future_gpt = executor.submit(call_groq_live, groq_api_key, "openai/gpt-oss-20b", user_query)
+            future_gemma_31b = executor.submit(call_gemini_live, google_api_key, "google/gemma-4-31b-it", user_query)
+            future_gemma_26b = executor.submit(call_gemini_live, google_api_key, "google/gemma-4-26b-a4b-it", user_query)
             
             res_qwen = future_qwen.result()
             res_gpt = future_gpt.result()
@@ -72,7 +71,7 @@ if submit_btn:
         st.success(f"⚡ Live execution complete. Optimal latency registered in {res_gpt['latency']:.3f}s.")
         
     else:
-        # Load Baseline Static Mock Performance Metric Snaps (Updated for 4 metrics)
+        # Load Baseline Static Mock Performance Metric Snaps
         latencies = [2.926, 2.685, 87.412, 85.194]
         throughputs = [395.4, 413.0, 8.9, 9.3]
         tokens_count = ["1,157", "1,109", "782", "796"]
@@ -82,13 +81,12 @@ if submit_btn:
     # --- DISPLAY BLOCK 1: HARDWARE SYSTEM BENCHMARK COCKPIT ---
     st.markdown("### 📊 Section 1: LLM Engine Performance & Comparison Grid")
     
-    # Dynamically generated metrics mapping explicitly to correct array locations
     df_metrics = pd.DataFrame({
         "Metric / Feature": ["Target Architecture", "Engine Infrastructure", "Inference Latency", "Generation Throughput", "Generated Tokens", "Compliance Matrix"],
-        "Variant 1: Qwen": ["qwen3.8-27b", "Groq Cloud", f"{latencies[0]:.3f}s", f"{throughputs[0]:.1f} TPS", tokens_count[0], "100% Isolated"],
-        "Variant 2: GPT-OSS (Fastest)": ["gpt-oss-20b", "Groq Cloud", f"{latencies[1]:.3f}s", f"{throughputs[1]:.1f} TPS", tokens_count[1], "100% Isolated"],
-        "Variant 3: Gemma 4 (31B)": ["gemma-4-31b-it", "Google AI Studio", f"{latencies[2]:.3f}s", f"{throughputs[2]:.1f} TPS", tokens_count[2], "100% Isolated"],
-        "Variant 4: Gemma 4 (26B)": ["gemma-4-26b-a4b-it", "Google AI Studio", f"{latencies[3]:.3f}s", f"{throughputs[3]:.1f} TPS", tokens_count[3], "100% Isolated"]
+        "Variant 1: Qwen": ["qwen/qwen3.8-27b", "Groq Cloud", f"{latencies:.3f}s", f"{throughputs:.1f} TPS", tokens_count, "100% Isolated"],
+        "Variant 2: GPT-OSS (Fastest)": ["openai/gpt-oss-20b", "Groq Cloud", f"{latencies:.3f}s", f"{throughputs:.1f} TPS", tokens_count, "100% Isolated"],
+        "Variant 3: Gemma 4 (31B)": ["google/gemma-4-31b-it", "Google AI Studio", f"{latencies:.3f}s", f"{throughputs:.1f} TPS", tokens_count, "100% Isolated"],
+        "Variant 4: Gemma 4 (26B)": ["google/gemma-4-26b-a4b-it", "Google AI Studio", f"{latencies:.3f}s", f"{throughputs:.1f} TPS", tokens_count, "100% Isolated"]
     })
     st.table(df_metrics)
     st.plotly_chart(generate_performance_chart(latencies, throughputs), use_container_width=True)
