@@ -2,12 +2,13 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.io as pio
 from plotly.subplots import make_subplots
 import time
 import concurrent.futures
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import io
 
@@ -113,14 +114,14 @@ def generate_ledger_chart():
     )
     return fig
 
-def generate_pdf_report(execution_mode, text_report, models, latencies, throughputs):
-    """Generates a clean PDF file binary stream using ReportLab."""
+def generate_pdf_report(execution_mode, text_report, models, latencies, throughputs, fig_perf, fig_ledger):
+    """Generates a clean PDF file binary stream containing fully embedded static chart exports."""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter, title="B2B Risk Intelligence Export")
     styles = getSampleStyleSheet()
-    
     story = []
-    # Title
+    
+    # Title Header
     story.append(Paragraph("<b>B2B Risk Intelligence Due Diligence Export</b>", styles['Title']))
     story.append(Spacer(1, 15))
     
@@ -129,7 +130,7 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
     story.append(Paragraph(f"Data Generation Profile: Executed via [{execution_mode}] Pipeline", mode_style))
     story.append(Spacer(1, 15))
     
-    # Infrastructure Benchmark Table
+    # Metric Grid Data Table
     story.append(Paragraph("<b>Compute Performance Grid Metrics</b>", styles['Heading2']))
     table_data = [["Model Target Cluster", "Inference Latency", "Throughput Rate"]]
     for idx, model in enumerate(models):
@@ -137,19 +138,36 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
         tps_text = f"{throughputs[idx]:.1f} TPS" if throughputs[idx] > 0 else "0.0 TPS"
         table_data.append([model, lat_text, tps_text])
         
-    t = Table(table_data, colWidths=[220, 140, 140])
+    t = Table(table_data, colWidths=[250, 120, 120])
     t.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#e2e8f0')),
         ('TEXTCOLOR', (0,0), (-1,0), colors.black),
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
         ('BOTTOMPADDING', (0,0), (-1,0), 8),
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
-        ('FONTNAME', (0,1), (-1,-1), 'Helvetica'),
         ('FONTSIZE', (0,0), (-1,-1), 10),
     ]))
     story.append(t)
     story.append(Spacer(1, 20))
     
+    # Render and embed Plotly Performance Chart into the PDF pipeline stream
+    try:
+        img_bytes_perf = pio.to_image(fig_perf, format='png', width=540, height=280)
+        story.append(Paragraph("<b>Visual Asset: Compute Performance Model</b>", styles['Heading3']))
+        story.append(Image(io.BytesIO(img_bytes_perf), width=480, height=250))
+        story.append(Spacer(1, 15))
+    except Exception as e:
+        story.append(Paragraph(f"<i>Performance Graph Rendering Skipped: {str(e)}</i>", styles['Italic']))
+        
+    # Render and embed Plotly Ledger Volatility Chart into the PDF pipeline stream
+    try:
+        img_bytes_ledger = pio.to_image(fig_ledger, format='png', width=540, height=280)
+        story.append(Paragraph("<b>Visual Asset: Intramonth Ledger Simulation</b>", styles['Heading3']))
+        story.append(Image(io.BytesIO(img_bytes_ledger), width=480, height=250))
+        story.append(Spacer(1, 25))
+    except Exception as e:
+        story.append(Paragraph(f"<i>Ledger Graph Rendering Skipped: {str(e)}</i>", styles['Italic']))
+        
     # Executive Verdict Analysis Text Paragraphs
     story.append(Paragraph("<b>Executive Credit Risk Evaluation Report</b>", styles['Heading2']))
     clean_lines = text_report.strip().split('\n')
@@ -158,7 +176,7 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
             story.append(Paragraph(line, styles['Normal']))
             story.append(Spacer(1, 6))
             
-    # Medical Disclaimer / Safety Check Footnote required for strict risk generation protocols
+    # Legal / General Info Disclaimer Footnote
     story.append(Spacer(1, 25))
     footnote_style = ParagraphStyle('Footnote', parent=styles['Italic'], fontSize=8, textColor=colors.gray)
     story.append(Paragraph("This is for informational purposes only. For medical advice or diagnosis, consult a professional. AI responses may include mistakes.", footnote_style))
@@ -183,7 +201,7 @@ def call_groq_live(api_key, model_name, user_prompt):
         )
         latency = time.perf_counter() - start_time
         tokens = completion.usage.completion_tokens
-        response_text = completion.choices[0].message.content
+        response_text = completion.choices.message.content
         return {"status": "success", "latency": latency, "tps": tokens / latency, "tokens": tokens, "response": response_text}
     except Exception as e:
         return {"status": "error", "error_msg": str(e)}
@@ -218,7 +236,6 @@ st.sidebar.markdown("---")
 execution_mode = st.sidebar.radio("Data Source Mode Selector", ["Mock Simulation Data", "Live Production APIs"])
 st.sidebar.markdown("---")
 
-# Bug Fixed: Descriptive sentence now changes responsively dynamically based on option changes
 st.markdown(f"Execute corporate lending due diligence using **{execution_mode.lower()}** infrastructure pipelines.")
 
 with st.container(border=True):
@@ -282,8 +299,12 @@ if submit_btn:
         final_text_report = MOCK_TEXT_RESPONSE
         st.success("✅ Mock environment generated instantly from baseline infrastructure logs.")
 
-    # --- ACTION DOWNLOAD CONTROLLER FOR USER EXPORT ---
-    pdf_bytes = generate_pdf_report(execution_mode, final_text_report, models_labels, latencies, throughputs)
+    # Generate Figures for View and PDF Export Pipelines
+    fig_perf = generate_performance_chart(latencies, throughputs)
+    fig_ledger = generate_ledger_chart()
+
+    # Action Button Controller for PDF Export Payload Data Download
+    pdf_bytes = generate_pdf_report(execution_mode, final_text_report, models_labels, latencies, throughputs, fig_perf, fig_ledger)
     st.download_button(
         label="📥 Download Executive Compliance Report (PDF)",
         data=pdf_bytes,
@@ -303,7 +324,7 @@ if submit_btn:
         "Variant 4: Gemma 4 (26B)": [models_labels[3], "Google AI Studio", f"{latencies[3]:.3f}s" if latencies[3] > 0 else "Offline", f"{throughputs[3]:.1f} TPS", tokens_count[3], compliance_status[3]]
     })
     st.table(df_metrics)
-    st.plotly_chart(generate_performance_chart(latencies, throughputs), use_container_width=True)
+    st.plotly_chart(fig_perf, use_container_width=True)
 
     # --- SECTION 2: CREDIT EVALUATION MATRIX & REPORT ---
     st.markdown("---")
@@ -317,4 +338,4 @@ if submit_btn:
         
     with col_out2:
         st.markdown("#### 📉 Intramonth Ledger Simulation (Plotly Visualization)")
-        st.plotly_chart(generate_ledger_chart(), use_container_width=True)
+        st.plotly_chart(fig_ledger, use_container_width=True)
