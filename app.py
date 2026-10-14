@@ -100,9 +100,15 @@ def generate_ledger_chart():
         title="<b>30-Day Distributor Working Capital Volatility Curve</b>",
         xaxis_title="Billing Cycle Day", 
         yaxis_title="Ledger Balance Value (₹)", 
-        margin=dict(l=30, r=30, t=50, b=40),
-        height=380,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        margin=dict(l=30, r=30, t=80, b=40), # Pushed top margin down to make room
+        height=400, # Expanded height slightly for cleaner scaling
+        legend=dict(
+            orientation="h", 
+            yanchor="bottom", 
+            y=1.12, # Shifted up to clear text overlap
+            xanchor="right", 
+            x=1
+        )
     )
     fig.add_annotation(
         x="Day 05", 
@@ -192,10 +198,10 @@ if submit_btn:
         st.info("🔄 Querying 4 cloud engine streams concurrently via background threads...")
         
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            future_qwen = executor.submit(call_groq_live, groq_api_key, "qwen/qwen3.8-27b", user_query)
-            future_gpt = executor.submit(call_groq_live, groq_api_key, "openai/gpt-oss-20b", user_query)
-            future_gemma_31b = executor.submit(call_gemini_live, google_api_key, "gemma-4-31b-it", user_query)
-            future_gemma_26b = executor.submit(call_gemini_live, google_api_key, "gemma-4-26b-a4b-it", user_query)
+            future_qwen = executor.submit(call_groq_live, groq_api_key, models_labels[0], user_query)
+            future_gpt = executor.submit(call_groq_live, groq_api_key, models_labels[1], user_query)
+            future_gemma_31b = executor.submit(call_gemini_live, google_api_key, models_labels[2], user_query)
+            future_gemma_26b = executor.submit(call_gemini_live, google_api_key, models_labels[3], user_query)
             
             res_qwen = future_qwen.result()
             res_gpt = future_gpt.result()
