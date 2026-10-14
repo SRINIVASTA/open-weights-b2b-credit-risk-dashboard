@@ -2,7 +2,7 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import matplotlib
-matplotlib.use('Agg')  # Headless mode protection for cloud servers
+matplotlib.use('Agg')  # Headless protection for cloud servers
 import matplotlib.pyplot as plt
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -38,7 +38,6 @@ def generate_performance_chart(latencies, throughputs):
 
 def generate_ledger_chart():
     days = [f"Day {i:02d}" for i in range(1, 31)]
-    # Fixed: Restored the complete dataset array sequence here
     simulated_cash = [12000, 9500, 8000, 6200, 3500, 3800, 4100, 4200, 4000, 4500, 4300, 4800, 4600, 4900, 4700, 4800, 4600, 4900, 4800, 15000, 85000, 190000, 310000, 385000, 340000, 210000, 95000, 45000, 22000, 14000]
     critical_baseline = [5000] * 30
     
@@ -107,7 +106,6 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
          pass
         
     try:
-        # Fixed: Restored the matching 30-day data timeline array inside report image generation
         simulated_cash = [12000, 9500, 8000, 6200, 3500, 3800, 4100, 4200, 4000, 4500, 4300, 4800, 4600, 4900, 4700, 4800, 4600, 4900, 4800, 15000, 85000, 190000, 310000, 385000, 340000, 210000, 95000, 45000, 22000, 14000]
         plt.figure(figsize=(6, 3))
         plt.plot(range(1, 31), simulated_cash, marker='o', color='#1f77b4', linewidth=2)
