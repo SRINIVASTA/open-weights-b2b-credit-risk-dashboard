@@ -93,8 +93,9 @@ def generate_performance_chart(latencies, throughputs):
 def generate_ledger_chart():
     """Simulates a 30-day corporate merchant ledger cash pipeline."""
     days = [f"Day {i:02d}" for i in range(1, 31)]
+    # Bug Fix: Restored simulated data points sequence array
     simulated_cash = [12000, 9500, 8000, 6200, 3500, 3800, 4100, 4200, 4000, 4500, 4300, 4800, 4600, 4900, 4700, 4800, 4600, 4900, 4800, 15000, 85000, 190000, 310000, 385000, 340000, 210000, 95000, 45000, 22000, 14000]
-    critical_baseline = * 30
+    critical_baseline = [5000] * 30
     
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=days, y=simulated_cash, name="Available Ledger Balance (INR)", mode="lines+markers", line=dict(color="#1f77b4", width=3)))
@@ -138,7 +139,7 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
         tps_text = f"{throughputs[idx]:.1f} TPS" if throughputs[idx] > 0 else "0.0 TPS"
         table_data.append([model, lat_text, tps_text])
         
-    t = Table(table_data, colWidths=)
+    t = Table(table_data, colWidths=[240, 130, 130])
     t.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#e2e8f0')),
         ('TEXTCOLOR', (0,0), (-1,0), colors.black),
@@ -318,10 +319,10 @@ if submit_btn:
     
     df_metrics = pd.DataFrame({
         "Metric / Feature": ["Target Architecture", "Engine Infrastructure", "Inference Latency", "Generation Throughput", "Generated Tokens", "Compliance Matrix"],
-        "Variant 1: Qwen": [models_labels, "Groq Cloud", f"{latencies:.3f}s" if latencies > 0 else "Offline", f"{throughputs:.1f} TPS", tokens_count, compliance_status],
-        "Variant 2: GPT-OSS": [models_labels, "Groq Cloud", f"{latencies:.3f}s" if latencies > 0 else "Offline", f"{throughputs:.1f} TPS", tokens_count, compliance_status],
-        "Variant 3: Gemma 4 (31B)": [models_labels, "Google AI Studio", f"{latencies:.3f}s" if latencies > 0 else "Offline", f"{throughputs:.1f} TPS", tokens_count, compliance_status],
-        "Variant 4: Gemma 4 (26B)": [models_labels, "Google AI Studio", f"{latencies:.3f}s" if latencies > 0 else "Offline", f"{throughputs:.1f} TPS", tokens_count, compliance_status]
+        "Variant 1: Qwen": [models_labels[0], "Groq Cloud", f"{latencies[0]:.3f}s" if latencies[0] > 0 else "Offline", f"{throughputs[0]:.1f} TPS", tokens_count[0], compliance_status[0]],
+        "Variant 2: GPT-OSS": [models_labels[1], "Groq Cloud", f"{latencies[1]:.3f}s" if latencies[1] > 0 else "Offline", f"{throughputs[1]:.1f} TPS", tokens_count[1], compliance_status[1]],
+        "Variant 3: Gemma 4 (31B)": [models_labels[2], "Google AI Studio", f"{latencies[2]:.3f}s" if latencies[2] > 0 else "Offline", f"{throughputs[2]:.1f} TPS", tokens_count[2], compliance_status[2]],
+        "Variant 4: Gemma 4 (26B)": [models_labels[3], "Google AI Studio", f"{latencies[3]:.3f}s" if latencies[3] > 0 else "Offline", f"{throughputs[3]:.1f} TPS", tokens_count[3], compliance_status[3]]
     })
     st.table(df_metrics)
     st.plotly_chart(fig_perf, use_container_width=True)
