@@ -93,8 +93,8 @@ def generate_performance_chart(latencies, throughputs):
 def generate_ledger_chart():
     """Simulates a 30-day corporate merchant ledger cash pipeline."""
     days = [f"Day {i:02d}" for i in range(1, 31)]
-    simulated_cash = [12000, 9500, 8000, 6200, 3500, 3800, 4100, 4200, 4000, 4500, 4300, 4800, 4600, 4900, 4700, 4800, 4600, 4900, 4800, 15000, 85000, 190000, 310000, 385000, 340000, 210000, 95000, 45000, 22000, 14000]
-    critical_baseline = [5000] * 30
+    simulated_cash =
+    critical_baseline = * 30
     
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=days, y=simulated_cash, name="Available Ledger Balance (INR)", mode="lines+markers", line=dict(color="#1f77b4", width=3)))
@@ -138,7 +138,7 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
         tps_text = f"{throughputs[idx]:.1f} TPS" if throughputs[idx] > 0 else "0.0 TPS"
         table_data.append([model, lat_text, tps_text])
         
-    t = Table(table_data, colWidths=[250, 120, 120])
+    t = Table(table_data, colWidths=)
     t.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#e2e8f0')),
         ('TEXTCOLOR', (0,0), (-1,0), colors.black),
@@ -152,7 +152,7 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
     
     # Render and embed Plotly Performance Chart into the PDF pipeline stream
     try:
-        img_bytes_perf = pio.to_image(fig_perf, format='png', width=540, height=280)
+        img_bytes_perf = pio.to_image(fig_perf, format='png', width=540, height=280, engine="kaleido")
         story.append(Paragraph("<b>Visual Asset: Compute Performance Model</b>", styles['Heading3']))
         story.append(Image(io.BytesIO(img_bytes_perf), width=480, height=250))
         story.append(Spacer(1, 15))
@@ -161,7 +161,7 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
         
     # Render and embed Plotly Ledger Volatility Chart into the PDF pipeline stream
     try:
-        img_bytes_ledger = pio.to_image(fig_ledger, format='png', width=540, height=280)
+        img_bytes_ledger = pio.to_image(fig_ledger, format='png', width=540, height=280, engine="kaleido")
         story.append(Paragraph("<b>Visual Asset: Intramonth Ledger Simulation</b>", styles['Heading3']))
         story.append(Image(io.BytesIO(img_bytes_ledger), width=480, height=250))
         story.append(Spacer(1, 25))
@@ -176,7 +176,7 @@ def generate_pdf_report(execution_mode, text_report, models, latencies, throughp
             story.append(Paragraph(line, styles['Normal']))
             story.append(Spacer(1, 6))
             
-    # Legal / General Info Disclaimer Footnote
+    # Legal Disclaimer Footnote
     story.append(Spacer(1, 25))
     footnote_style = ParagraphStyle('Footnote', parent=styles['Italic'], fontSize=8, textColor=colors.gray)
     story.append(Paragraph("This is for informational purposes only. For medical advice or diagnosis, consult a professional. AI responses may include mistakes.", footnote_style))
@@ -262,10 +262,10 @@ if submit_btn:
         st.info("🔄 Querying 4 cloud engine streams concurrently via background threads...")
         
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            future_qwen = executor.submit(call_groq_live, groq_api_key, models_labels[0], user_query)
-            future_gpt = executor.submit(call_groq_live, groq_api_key, models_labels[1], user_query)
-            future_gemma_31b = executor.submit(call_gemini_live, google_api_key, models_labels[2], user_query)
-            future_gemma_26b = executor.submit(call_gemini_live, google_api_key, models_labels[3], user_query)
+            future_qwen = executor.submit(call_groq_live, groq_api_key, models_labels, user_query)
+            future_gpt = executor.submit(call_groq_live, groq_api_key, models_labels, user_query)
+            future_gemma_31b = executor.submit(call_gemini_live, google_api_key, models_labels, user_query)
+            future_gemma_26b = executor.submit(call_gemini_live, google_api_key, models_labels, user_query)
             
             res_qwen = future_qwen.result()
             res_gpt = future_gpt.result()
@@ -318,10 +318,10 @@ if submit_btn:
     
     df_metrics = pd.DataFrame({
         "Metric / Feature": ["Target Architecture", "Engine Infrastructure", "Inference Latency", "Generation Throughput", "Generated Tokens", "Compliance Matrix"],
-        "Variant 1: Qwen": [models_labels[0], "Groq Cloud", f"{latencies[0]:.3f}s" if latencies[0] > 0 else "Offline", f"{throughputs[0]:.1f} TPS", tokens_count[0], compliance_status[0]],
-        "Variant 2: GPT-OSS": [models_labels[1], "Groq Cloud", f"{latencies[1]:.3f}s" if latencies[1] > 0 else "Offline", f"{throughputs[1]:.1f} TPS", tokens_count[1], compliance_status[1]],
-        "Variant 3: Gemma 4 (31B)": [models_labels[2], "Google AI Studio", f"{latencies[2]:.3f}s" if latencies[2] > 0 else "Offline", f"{throughputs[2]:.1f} TPS", tokens_count[2], compliance_status[2]],
-        "Variant 4: Gemma 4 (26B)": [models_labels[3], "Google AI Studio", f"{latencies[3]:.3f}s" if latencies[3] > 0 else "Offline", f"{throughputs[3]:.1f} TPS", tokens_count[3], compliance_status[3]]
+        "Variant 1: Qwen": [models_labels, "Groq Cloud", f"{latencies:.3f}s" if latencies > 0 else "Offline", f"{throughputs:.1f} TPS", tokens_count, compliance_status],
+        "Variant 2: GPT-OSS": [models_labels, "Groq Cloud", f"{latencies:.3f}s" if latencies > 0 else "Offline", f"{throughputs:.1f} TPS", tokens_count, compliance_status],
+        "Variant 3: Gemma 4 (31B)": [models_labels, "Google AI Studio", f"{latencies:.3f}s" if latencies > 0 else "Offline", f"{throughputs:.1f} TPS", tokens_count, compliance_status],
+        "Variant 4: Gemma 4 (26B)": [models_labels, "Google AI Studio", f"{latencies:.3f}s" if latencies > 0 else "Offline", f"{throughputs:.1f} TPS", tokens_count, compliance_status]
     })
     st.table(df_metrics)
     st.plotly_chart(fig_perf, use_container_width=True)
