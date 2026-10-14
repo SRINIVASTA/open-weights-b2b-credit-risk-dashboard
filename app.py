@@ -8,7 +8,6 @@ import os
 # Appends the src directory to Python's system search runtime environment path 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src'))
 
-# Fixed: Explicitly added the package namespace modifier structure paths
 from src.config import DEFAULT_PROMPT, MOCK_TEXT_RESPONSE
 from src.visualizer import generate_performance_chart, generate_ledger_chart, generate_pdf_report
 from src.engine_clients import call_groq_live, call_gemini_live
@@ -46,10 +45,10 @@ if submit_btn:
         st.info("🔄 Querying 4 cloud engine streams concurrently via background threads...")
         
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            future_qwen = executor.submit(call_groq_live, groq_api_key, models_labels, user_query)
-            future_gpt = executor.submit(call_groq_live, groq_api_key, models_labels, user_query)
-            future_gemma_31b = executor.submit(call_gemini_live, google_api_key, models_labels, user_query)
-            future_gemma_26b = executor.submit(call_gemini_live, google_api_key, models_labels, user_query)
+            future_qwen = executor.submit(call_groq_live, groq_api_key, models_labels[0], user_query)
+            future_gpt = executor.submit(call_groq_live, groq_api_key, models_labels[1], user_query)
+            future_gemma_31b = executor.submit(call_gemini_live, google_api_key, models_labels[2], user_query)
+            future_gemma_26b = executor.submit(call_gemini_live, google_api_key, models_labels[3], user_query)
             
             res_qwen = future_qwen.result()
             res_gpt = future_gpt.result()
@@ -97,12 +96,13 @@ if submit_btn:
 
     st.markdown("### 📊 Section 1: LLM Engine Performance & Comparison Grid")
     
+    # Bug Fixed: Mapped precise indexes (0, 1, 2, 3) inside column lists to ensure clean dataframe rendering 
     df_metrics = pd.DataFrame({
         "Metric / Feature": ["Target Architecture", "Engine Infrastructure", "Inference Latency", "Generation Throughput", "Generated Tokens", "Compliance Matrix"],
-        "Variant 1: Qwen": [models_labels, "Groq Cloud", f"{latencies:.3f}s" if latencies > 0 else "Offline", f"{throughputs:.1f} TPS", tokens_count, compliance_status],
-        "Variant 2: GPT-OSS": [models_labels, "Groq Cloud", f"{latencies:.3f}s" if latencies > 0 else "Offline", f"{throughputs:.1f} TPS", tokens_count, compliance_status],
-        "Variant 3: Gemma 4 (31B)": [models_labels, "Google AI Studio", f"{latencies:.3f}s" if latencies > 0 else "Offline", f"{throughputs:.1f} TPS", tokens_count, compliance_status],
-        "Variant 4: Gemma 4 (26B)": [models_labels, "Google AI Studio", f"{latencies:.3f}s" if latencies > 0 else "Offline", f"{throughputs:.1f} TPS", tokens_count, compliance_status]
+        "Variant 1: Qwen": [models_labels[0], "Groq Cloud", f"{latencies[0]:.3f}s" if latencies[0] > 0 else "Offline", f"{throughputs[0]:.1f} TPS", tokens_count[0], compliance_status[0]],
+        "Variant 2: GPT-OSS": [models_labels[1], "Groq Cloud", f"{latencies[1]:.3f}s" if latencies[1] > 0 else "Offline", f"{throughputs[1]:.1f} TPS", tokens_count[1], compliance_status[1]],
+        "Variant 3: Gemma 4 (31B)": [models_labels[2], "Google AI Studio", f"{latencies[2]:.3f}s" if latencies[2] > 0 else "Offline", f"{throughputs[2]:.1f} TPS", tokens_count[2], compliance_status[2]],
+        "Variant 4: Gemma 4 (26B)": [models_labels[3], "Google AI Studio", f"{latencies[3]:.3f}s" if latencies[3] > 0 else "Offline", f"{throughputs[3]:.1f} TPS", tokens_count[3], compliance_status[3]]
     })
     st.table(df_metrics)
     st.plotly_chart(fig_perf, use_container_width=True)
