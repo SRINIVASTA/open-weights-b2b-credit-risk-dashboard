@@ -106,6 +106,7 @@ def generate_ledger_chart():
     )
     fig.add_annotation(x="Day 05", y=3500, text="Supplier Invoice Crash", showarrow=True, arrowhead=2, color="red", bgcolor="white")
     return fig
+# app.py (Part 2 of 2: API Request Clients & Interface Layout)
 
 # ==========================================
 # 3. LIVE BACKGROUND WORKER CLIENTS
@@ -248,18 +249,3 @@ if submit_btn:
     with col_out2:
         st.markdown("#### 📉 Intramonth Ledger Simulation (Plotly Visualization)")
         st.plotly_chart(generate_ledger_chart(), use_container_width=True)
-
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=days, y=simulated_cash, name="Available Ledger Balance (INR)", mode="lines+markers", line=dict(color="#1f77b4", width=3)))
-    fig.add_trace(go.Scatter(x=days, y=critical_baseline, name="Compliance Safety Limit (₹5,000)", mode="lines", line=dict(color="red", width=2, dash="dash")))
-    
-    fig.update_layout(
-        title="<b>30-Day Distributor Working Capital Volatility Curve</b>",
-        xaxis_title="Billing Cycle Day", 
-        yaxis_title="Ledger Balance Value (₹)", 
-        margin=dict(l=30, r=30, t=50, b=40),
-        height=380,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-    )
-    fig.add_annotation(x="Day 05", y=3500, text="Supplier Invoice Crash", showarrow=True, arrowhead=2, color="red", bgcolor="white")
-    return fig
