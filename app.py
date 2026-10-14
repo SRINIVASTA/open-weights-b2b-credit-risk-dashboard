@@ -34,10 +34,10 @@ DEFAULT_PROMPT = (
 MOCK_TEXT_RESPONSE = """
 ### B2B RISK ANALYSIS & CREDIT BOARD VERDICT: CONDITIONAL APPROVAL
 
-Under a high-vigilance credit compliance framework, the application for a ₹3,50,000 inventory expansion loan is granted subject to strict structural covenants. 
+Under a high-vigilance credit compliance framework, the application for a INR 3,50,000 inventory expansion loan is granted subject to strict structural covenants. 
 
 #### Core Risk Identifiers:
-1. Severe Cash Runway Strain (🔴 HIGH RISK): The average daily balance routinely falls below the ₹5,000 baseline. This indicates immediate cash-crunch exposure if any payment clearance delays happen.
+1. Severe Cash Runway Strain (🔴 HIGH RISK): The average daily balance routinely falls below the INR 5,000 baseline. This indicates immediate cash-crunch exposure if any payment clearance delays happen.
 2. Upfront Hardware Supplier Invoices (🟡 MEDIUM RISK): The distributor drains working capital before extracting downstream value.
 3. Holiday Sales Volume Spikes (🟢 LOW RISK): Transaction logs reflect verifiable, predictable seasonal revenue waves that clear the structural debt capacity safely.
 
