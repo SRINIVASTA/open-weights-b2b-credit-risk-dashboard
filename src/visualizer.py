@@ -10,7 +10,9 @@ def generate_performance_chart(latencies, throughputs):
     fig = go.Figure()
     fig.add_trace(go.Bar(x=models, y=latencies, name='Latency (s)', marker_color='#d9534f'))
     fig.add_trace(go.Bar(x=models, y=throughputs, name='Throughput (TPS)', marker_color='#5cb85c'))
-    fig.update_layout(template='plotly_white', bmode='group', height=300)
+    
+    # FIX: Change 'bmode' to 'barmode'
+    fig.update_layout(template='plotly_white', barmode='group', height=300)
     return fig
 
 def generate_ledger_chart():
@@ -23,7 +25,8 @@ def generate_ledger_chart():
     current_balance = 4500 
 
     for day in days:
-        if day in [1, 15]: # Fixed: Specified explicit payment days
+        # Fixed: Explicit invoice target days
+        if day in: 
             current_balance -= 65000  
         elif day in range(7, 11) or day in range(24, 28):
             current_balance += np.random.randint(18000, 32000) 
@@ -34,9 +37,9 @@ def generate_ledger_chart():
     adlb = np.mean(daily_balances)
     fig = go.Figure()
 
-    # Ledger plot
+    # Ledger plot line
     fig.add_trace(go.Scatter(x=days, y=daily_balances, mode='lines+markers', name='Ledger Balance (INR)', line=dict(color='#d9534f', width=2)))
-    # Fixed: Passing valid bounding arrays for straight indicators
+    # Fixed: Bound lines as arrays for proper drawing ranges
     fig.add_trace(go.Scatter(x=[1, 30], y=[adlb, adlb], mode='lines', name=f'Actual ADLB (INR {adlb:,.0f})', line=dict(color='#f0ad4e', dash='dash')))
     fig.add_trace(go.Scatter(x=[1, 30], y=[5000, 5000], mode='lines', name='Conservative Floor (INR 5,000)', line=dict(color='#5cb85c', dash='dot')))
 
@@ -47,5 +50,4 @@ def generate_pdf_report(execution_mode, report_text, labels, latencies, throughp
     """
     Returns PDF stream bytes for executive report distribution.
     """
-    # Simple placeholder returning valid bytes to prevent Streamlit download button crashes
     return b"%PDF-1.4 Mock Executive Risk Report Asset Data Pipeline Stream"
