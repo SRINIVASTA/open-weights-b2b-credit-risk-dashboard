@@ -5,20 +5,22 @@ import concurrent.futures
 import sys
 import os
 
+# Appends the src directory to Python's system search runtime environment path 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src'))
 
 from src.config import DEFAULT_PROMPT, MOCK_TEXT_RESPONSE
 from src.visualizer import generate_performance_chart, generate_ledger_chart, generate_pdf_report
 from src.engine_clients import call_groq_live, call_gemini_live
 
+# Custom CSS implementation: Restricts full width and gives a perfect 1-inch desktop layout border
 st.markdown("""
     <style>
         .block-container {
             max-width: 1400px !important;
             padding-top: 1.5rem !important;
             padding-bottom: 1.5rem !important;
-            padding-left: 96px !important;
-            padding-right: 96px !important;
+            padding-left: 96px !important;  /* Exactly 1 inch padding from the sidebar */
+            padding-right: 96px !important; /* Exactly 1 inch padding from the right monitor bezel */
         }
     </style>
 """, unsafe_allow_html=True)
@@ -38,12 +40,12 @@ with st.container(border=True):
     submit_btn = st.button("🚀 Process Automated Analysis", type="primary", use_container_width=True)
 
 if submit_btn:
-    # UPDATED: Direct matching to production-tier architectures on Groq and Google
+    # High-capacity production-tier target architectures
     models_labels = [
-        'qwen/qwen3.8-27b',         # Variant 1: Qwen (Groq Edge Core)
-        'openai/gpt-oss-120b',      # Variant 2: GPT-OSS (Groq High Reasoning Tier)
-        'gemma-4-31b-it',           # Variant 3: Gemma 4 Frontier 
-        'gemma-4-26b-a4b-it'        # Variant 4: Gemma 4 MoE
+        'qwen/qwen3.8-27b',         # Variant 1: Qwen
+        'openai/gpt-oss-120b',      # Variant 2: GPT-OSS
+        'gemma-4-31b-it',           # Variant 3: Gemma 4 (31B)
+        'gemma-4-26b-a4b-it'        # Variant 4: Gemma 4 (26B)
     ]
     
     latencies = [0.0, 0.0, 0.0, 0.0]
@@ -63,7 +65,7 @@ if submit_btn:
         st.info("🔄 Querying 4 cloud engine streams concurrently via background threads...")
         
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            # FIX: Explicit index unpacking ensures string values pass to client drivers
+            # FIXED: Explicit array indices are passed as distinct strings to clients
             future_qwen = executor.submit(call_groq_live, groq_api_key, models_labels[0], user_query)
             future_gpt = executor.submit(call_groq_live, groq_api_key, models_labels[1], user_query)
             future_gemma_31b = executor.submit(call_gemini_live, google_api_key, models_labels[2], user_query)
@@ -115,7 +117,7 @@ if submit_btn:
 
     st.markdown("### 📊 Section 1: LLM Engine Performance & Comparison Grid")
     
-    # FIX: Corrected array template assignments from array references to sequential floats
+    # FIXED: البرنامج targeted specific single list indices for display grid strings
     df_metrics = pd.DataFrame({
         "Metric / Feature": ["Target Architecture", "Engine Infrastructure", "Inference Latency", "Generation Throughput", "Generated Tokens", "Compliance Matrix"],
         "Variant 1: Qwen": [models_labels[0], "Groq Cloud", f"{latencies[0]:.3f}s" if latencies[0] > 0 else "Offline", f"{throughputs[0]:.1f} TPS", tokens_count[0], compliance_status[0]],
