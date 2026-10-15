@@ -4,7 +4,7 @@ import numpy as np
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 def generate_performance_chart(latencies, throughputs):
@@ -46,7 +46,9 @@ def generate_ledger_chart():
 
     fig.add_trace(go.Scatter(x=list(days), y=daily_balances, mode='lines+markers', name='Ledger Balance (INR)', line=dict(color='#1A365D', width=2)))
     fig.add_trace(go.Scatter(x=[1, 30], y=[adlb, adlb], mode='lines', name=f'Actual ADLB (INR {adlb:,.0f})', line=dict(color='#f0ad4e', dash='dash')))
-    fig.add_trace(go.Scatter(x=[1, 30], y=[5000, 5000], mode='lines', name='Conservative Floor (INR 5,000)', line=dict(color='#s9534f', dash='dot')))
+    
+    # FIX: Corrected invalid color hex code string from '#s9534f' to '#d9534f'
+    fig.add_trace(go.Scatter(x=[1, 30], y=[5000, 5000], mode='lines', name='Conservative Floor (INR 5,000)', line=dict(color='#d9534f', dash='dot')))
 
     fig.update_layout(
         title="30-Day Working Capital Volatility Curve",
@@ -60,11 +62,10 @@ def generate_ledger_chart():
 def generate_pdf_report(execution_mode, report_text, labels, latencies, throughputs):
     """
     Compiles live architecture execution statistics and risk analytical metrics 
-    into a production-grade binary PDF report stream with static image assets.
+    into a production-grade binary PDF report stream.
     """
     buffer = BytesIO()
     
-    # 1. Initialize Document Canvas (With 0.75-inch uniform margin boundaries)
     doc = SimpleDocTemplate(
         buffer, 
         pagesize=letter,
@@ -75,11 +76,10 @@ def generate_pdf_report(execution_mode, report_text, labels, latencies, throughp
     styles = getSampleStyleSheet()
     story = []
     
-    PRIMARY_COLOR = colors.HexColor("#1A365D")   # Deep Corporate Navy
-    SECONDARY_COLOR = colors.HexColor("#2B6CB0") # Pipeline Slate Blue
-    TEXT_COLOR = colors.HexColor("#2D3748")      # Charcoal Body Text
+    PRIMARY_COLOR = colors.HexColor("#1A365D")   
+    SECONDARY_COLOR = colors.HexColor("#2B6CB0") 
+    TEXT_COLOR = colors.HexColor("#2D3748")      
     
-    # 2. Configure Typography Styles
     title_style = ParagraphStyle(
         'DocTitle',
         parent=styles['Heading1'],
@@ -88,7 +88,7 @@ def generate_pdf_report(execution_mode, report_text, labels, latencies, throughp
         leading=24,
         textColor=PRIMARY_COLOR,
         spaceAfter=6,
-        alignment=1 # Centered Header Layout
+        alignment=1 
     )
     
     meta_style = ParagraphStyle(
@@ -123,19 +123,17 @@ def generate_pdf_report(execution_mode, report_text, labels, latencies, throughp
         spaceAfter=8
     )
 
-    # 3. Document Header Section
     story.append(Paragraph("B2B Risk Intelligence Due Diligence Export", title_style))
     story.append(Paragraph(f"Data Generation Profile: Executed via [{execution_mode}] Pipeline", meta_style))
     story.append(Spacer(1, 10))
     
-    # 4. Telemetry Performance Table Grid
     table_data = [["Model Target Cluster", "Inference Latency", "Throughput Rate"]]
     for i in range(len(labels)):
         lat_val = f"{latencies[i]:.3f}s" if latencies[i] > 0 else "Offline"
         tps_val = f"{throughputs[i]:.1f} TPS" if throughputs[i] > 0 else "0.0 TPS"
         table_data.append([labels[i], lat_val, tps_val])
         
-    perf_table = Table(table_data, colWidths=[220, 140, 140])
+    perf_table = Table(table_data, colWidths=[240, 130, 130])
     perf_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#F7FAFC")),
         ('TEXTCOLOR', (0, 0), (-1, 0), SECONDARY_COLOR),
@@ -152,16 +150,13 @@ def generate_pdf_report(execution_mode, report_text, labels, latencies, throughp
     story.append(perf_table)
     story.append(Spacer(1, 15))
     
-    # 5. Core Operational Risk Matrix Text Generation Pipeline
     story.append(Paragraph("Executive Credit Risk Evaluation Report", section_style))
     
-    # Standardize textual presentation elements out of markdown blocks safely
     cleaned_report_text = report_text.replace("###", "").replace("####", "").replace("**", "").replace("*", "-")
     for line in cleaned_report_text.split('\n'):
         if line.strip():
             story.append(Paragraph(line.strip(), body_style))
             
-    # 6. Render Completed Document Stream Pipeline
     doc.build(story)
     buffer.seek(0)
     return buffer.getvalue()
