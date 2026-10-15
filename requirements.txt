@@ -5,4 +5,3 @@ reportlab
 matplotlib
 groq
 google-genai
-kaleido==0.2.1
