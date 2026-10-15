@@ -40,7 +40,14 @@ with st.container(border=True):
     submit_btn = st.button("🚀 Process Automated Analysis", type="primary", use_container_width=True)
 
 if submit_btn:
-    models_labels = ['qwen/qwen3.8-27b', 'openai/gpt-oss-20b', 'gemma-4-31b-it', 'gemma-4-26b-a4b-it']
+    # UPDATED: Targets pure Gemma 4 variants via the Google AI Studio pipeline
+    models_labels = [
+        'qwen-2.5-coder-32b',       # Variant 1: Qwen (Groq)
+        'llama-3.3-70b-specdec',    # Variant 2: GPT-OSS / Llama (Groq)
+        'gemma-4-31b-it',           # Variant 3: Gemma 4 Frontier Intelligence (Google)
+        'gemma-4-26b-a4b-it'        # Variant 4: Gemma 4 MoE Architecture (Google)
+    ]
+    
     latencies = [0.0, 0.0, 0.0, 0.0]
     throughputs = [0.0, 0.0, 0.0, 0.0]
     tokens_count = ["Offline", "Offline", "Offline", "Offline"]
@@ -60,6 +67,7 @@ if submit_btn:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future_qwen = executor.submit(call_groq_live, groq_api_key, models_labels[0], user_query)
             future_gpt = executor.submit(call_groq_live, groq_api_key, models_labels[1], user_query)
+            # Sends the specific gemma-4 model tags to Google AI Studio client wrappers
             future_gemma_31b = executor.submit(call_gemini_live, google_api_key, models_labels[2], user_query)
             future_gemma_26b = executor.submit(call_gemini_live, google_api_key, models_labels[3], user_query)
             
@@ -70,7 +78,7 @@ if submit_btn:
 
         responses = [res_qwen, res_gpt, res_gemma_31b, res_gemma_26b]
         for idx, res in enumerate(responses):
-            if res["status"] == "success":
+            if res and res.get("status") == "success":
                 latencies[idx] = res['latency']
                 throughputs[idx] = res['tps']
                 tokens_count[idx] = f"{res['tokens']:,}"
@@ -109,6 +117,7 @@ if submit_btn:
 
     st.markdown("### 📊 Section 1: LLM Engine Performance & Comparison Grid")
     
+    # Clean programmatic index string mapping for dataframe table rows
     df_metrics = pd.DataFrame({
         "Metric / Feature": ["Target Architecture", "Engine Infrastructure", "Inference Latency", "Generation Throughput", "Generated Tokens", "Compliance Matrix"],
         "Variant 1: Qwen": [models_labels[0], "Groq Cloud", f"{latencies[0]:.3f}s" if latencies[0] > 0 else "Offline", f"{throughputs[0]:.1f} TPS", tokens_count[0], compliance_status[0]],
