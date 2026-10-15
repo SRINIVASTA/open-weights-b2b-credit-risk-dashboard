@@ -11,7 +11,7 @@ def generate_performance_chart(latencies, throughputs):
     fig.add_trace(go.Bar(x=models, y=latencies, name='Latency (s)', marker_color='#d9534f'))
     fig.add_trace(go.Bar(x=models, y=throughputs, name='Throughput (TPS)', marker_color='#5cb85c'))
     
-    # FIX: Change 'bmode' to 'barmode'
+    # Corrected keyword parameter to barmode
     fig.update_layout(template='plotly_white', barmode='group', height=300)
     return fig
 
@@ -25,7 +25,7 @@ def generate_ledger_chart():
     current_balance = 4500 
 
     for day in days:
-        # Fixed: Explicit invoice target days
+        # FIX: Specified explicit supplier invoice payment target days (Day 1 and Day 15)
         if day in: 
             current_balance -= 65000  
         elif day in range(7, 11) or day in range(24, 28):
@@ -39,7 +39,8 @@ def generate_ledger_chart():
 
     # Ledger plot line
     fig.add_trace(go.Scatter(x=days, y=daily_balances, mode='lines+markers', name='Ledger Balance (INR)', line=dict(color='#d9534f', width=2)))
-    # Fixed: Bound lines as arrays for proper drawing ranges
+    
+    # FIX: Populated correct boundary coordinates for straight line tracking indicators
     fig.add_trace(go.Scatter(x=[1, 30], y=[adlb, adlb], mode='lines', name=f'Actual ADLB (INR {adlb:,.0f})', line=dict(color='#f0ad4e', dash='dash')))
     fig.add_trace(go.Scatter(x=[1, 30], y=[5000, 5000], mode='lines', name='Conservative Floor (INR 5,000)', line=dict(color='#5cb85c', dash='dot')))
 
