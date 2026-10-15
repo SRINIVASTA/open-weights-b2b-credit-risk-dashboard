@@ -5,22 +5,20 @@ import concurrent.futures
 import sys
 import os
 
-# Appends the src directory to Python's system search runtime environment path 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src'))
 
 from src.config import DEFAULT_PROMPT, MOCK_TEXT_RESPONSE
 from src.visualizer import generate_performance_chart, generate_ledger_chart, generate_pdf_report
 from src.engine_clients import call_groq_live, call_gemini_live
 
-# Custom CSS implementation: Restricts full width and gives a perfect 1-inch desktop layout border
 st.markdown("""
     <style>
         .block-container {
             max-width: 1400px !important;
             padding-top: 1.5rem !important;
             padding-bottom: 1.5rem !important;
-            padding-left: 96px !important;  /* Exactly 1 inch padding from the sidebar */
-            padding-right: 96px !important; /* Exactly 1 inch padding from the right monitor bezel */
+            padding-left: 96px !important;
+            padding-right: 96px !important;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -40,14 +38,7 @@ with st.container(border=True):
     submit_btn = st.button("🚀 Process Automated Analysis", type="primary", use_container_width=True)
 
 if submit_btn:
-    # UPDATED: Targets pure Gemma 4 variants via the Google AI Studio pipeline
-    models_labels = [
-        'qwen-2.5-coder-32b',       # Variant 1: Qwen (Groq)
-        'llama-3.3-70b-specdec',    # Variant 2: GPT-OSS / Llama (Groq)
-        'gemma-4-31b-it',           # Variant 3: Gemma 4 Frontier Intelligence (Google)
-        'gemma-4-26b-a4b-it'        # Variant 4: Gemma 4 MoE Architecture (Google)
-    ]
-    
+    models_labels = ['qwen-2.5-coder-32b', 'llama-3.3-70b-specdec', 'gemma-4-31b-it', 'gemma-4-26b-a4b-it']
     latencies = [0.0, 0.0, 0.0, 0.0]
     throughputs = [0.0, 0.0, 0.0, 0.0]
     tokens_count = ["Offline", "Offline", "Offline", "Offline"]
@@ -67,7 +58,6 @@ if submit_btn:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future_qwen = executor.submit(call_groq_live, groq_api_key, models_labels[0], user_query)
             future_gpt = executor.submit(call_groq_live, groq_api_key, models_labels[1], user_query)
-            # Sends the specific gemma-4 model tags to Google AI Studio client wrappers
             future_gemma_31b = executor.submit(call_gemini_live, google_api_key, models_labels[2], user_query)
             future_gemma_26b = executor.submit(call_gemini_live, google_api_key, models_labels[3], user_query)
             
@@ -117,7 +107,6 @@ if submit_btn:
 
     st.markdown("### 📊 Section 1: LLM Engine Performance & Comparison Grid")
     
-    # Clean programmatic index string mapping for dataframe table rows
     df_metrics = pd.DataFrame({
         "Metric / Feature": ["Target Architecture", "Engine Infrastructure", "Inference Latency", "Generation Throughput", "Generated Tokens", "Compliance Matrix"],
         "Variant 1: Qwen": [models_labels[0], "Groq Cloud", f"{latencies[0]:.3f}s" if latencies[0] > 0 else "Offline", f"{throughputs[0]:.1f} TPS", tokens_count[0], compliance_status[0]],
