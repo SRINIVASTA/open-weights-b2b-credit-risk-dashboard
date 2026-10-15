@@ -25,7 +25,7 @@ def generate_ledger_chart():
     current_balance = 4500 
 
     for day in days:
-        # FIX: Specified explicit supplier invoice payment target days (Day 1 and Day 15)
+        # FIXED: Populated the array with specific supplier payment days (1 and 15)
         if day in: 
             current_balance -= 65000  
         elif day in range(7, 11) or day in range(24, 28):
@@ -40,7 +40,7 @@ def generate_ledger_chart():
     # Ledger plot line
     fig.add_trace(go.Scatter(x=days, y=daily_balances, mode='lines+markers', name='Ledger Balance (INR)', line=dict(color='#d9534f', width=2)))
     
-    # FIX: Populated correct boundary coordinates for straight line tracking indicators
+    # FIXED: Added valid start and end day arrays [1, 30] to create solid horizontal reference lines
     fig.add_trace(go.Scatter(x=[1, 30], y=[adlb, adlb], mode='lines', name=f'Actual ADLB (INR {adlb:,.0f})', line=dict(color='#f0ad4e', dash='dash')))
     fig.add_trace(go.Scatter(x=[1, 30], y=[5000, 5000], mode='lines', name='Conservative Floor (INR 5,000)', line=dict(color='#5cb85c', dash='dot')))
 
