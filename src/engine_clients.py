@@ -1,39 +1,62 @@
 # src/engine_clients.py
 import time
+from groq import Groq
+import google.generativeai as genai
 
-def call_groq_live(api_key, model_name, user_prompt):
+def call_groq_live(api_key, model_label, prompt):
+    """
+    Handles live API calls to Groq infrastructure with precise metrics collection.
+    """
+    start_time = time.time()
     try:
-        from groq import Groq
         client = Groq(api_key=api_key)
-        start_time = time.perf_counter()
-        completion = client.chat.completions.create(
-            model=model_name,
-            messages=[{"role": "user", "content": f"Provide an immediate B2B risk analysis under a highly conservative credit framework:\n{user_prompt}"}],
-            temperature=0.1
+        response = client.chat.completions.create(
+            model=model_label,
+            messages=[
+                {"role": "system", "content": "You are a conservative B2B credit risk compliance framework auditor."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.0
         )
-        latency = time.perf_counter() - start_time
-        tokens = completion.usage.completion_tokens
-        response_text = completion.choices.message.content
-        return {"status": "success", "latency": latency, "tps": tokens / latency, "tokens": tokens, "response": response_text}
+        latency = time.time() - start_time
+        # Extract metadata safely
+        tokens = response.usage.completion_tokens if response.usage else len(response.choices[0].message.content.split())
+        tps = tokens / latency if latency > 0 else 0.0
+        
+        return {
+            "status": "success",
+            "latency": latency,
+            "tps": tps,
+            "tokens": tokens,
+            "response": response.choices[0].message.content
+        }
     except Exception as e:
-        return {"status": "error", "error_msg": str(e)}
+        return {"status": "error", "message": str(e)}
 
-def call_gemini_live(api_key, model_name, user_prompt):
+def call_gemini_live(api_key, model_label, prompt):
+    """
+    Handles live API calls to Google AI Studio infrastructure with precise metrics collection.
+    """
+    start_time = time.time()
     try:
-        from google import genai
-        from google.genai import types
-        client = genai.Client(api_key=api_key)
-        start_time = time.perf_counter()
-        response = client.models.generate_content(
-            model=model_name,
-            contents=user_prompt,
-            config=types.GenerateContentConfig(temperature=0.1)
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel(
+            model_name=model_label,
+            system_instruction="You are a conservative B2B credit risk compliance framework auditor."
         )
-        latency = time.perf_counter() - start_time
-        try:
-            tokens = response.usage_metadata.candidates_token_count
-        except:
-            tokens = len(response.text.split()) * 1.3
-        return {"status": "success", "latency": latency, "tps": tokens / latency, "tokens": int(tokens), "response": response.text}
+        response = model.generate_content(prompt)
+        latency = time.time() - start_time
+        
+        # Calculate approximate token details if usage metadata is missing
+        tokens = response.usage_metadata.candidates_token_count if hasattr(response, 'usage_metadata') and response.usage_metadata else len(response.text.split())
+        tps = tokens / latency if latency > 0 else 0.0
+        
+        return {
+            "status": "success",
+            "latency": latency,
+            "tps": tps,
+            "tokens": tokens,
+            "response": response.text
+        }
     except Exception as e:
-        return {"status": "error", "error_msg": str(e)}
+        return {"status": "error", "message": str(e)}
