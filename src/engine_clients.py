@@ -1,7 +1,7 @@
 # src/engine_clients.py
 import time
 from groq import Groq
-import google.generativeai as genai
+from google import genai  # Modern google-genai client interface import
 
 def call_groq_live(api_key, model_label, prompt):
     """
@@ -19,7 +19,6 @@ def call_groq_live(api_key, model_label, prompt):
             temperature=0.0
         )
         latency = time.time() - start_time
-        # Extract metadata safely
         tokens = response.usage.completion_tokens if response.usage else len(response.choices[0].message.content.split())
         tps = tokens / latency if latency > 0 else 0.0
         
@@ -35,20 +34,22 @@ def call_groq_live(api_key, model_label, prompt):
 
 def call_gemini_live(api_key, model_label, prompt):
     """
-    Handles live API calls to Google AI Studio infrastructure with precise metrics collection.
+    Handles live API calls to Google AI Studio using the modern google-genai client layer.
     """
     start_time = time.time()
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel(
-            model_name=model_label,
-            system_instruction="You are a conservative B2B credit risk compliance framework auditor."
+        # Initialize the modern unified client object
+        client = genai.Client(api_key=api_key)
+        
+        # Modern endpoint structure for content generation
+        response = client.models.generate_content(
+            model=model_label,
+            contents=prompt,
         )
-        response = model.generate_content(prompt)
         latency = time.time() - start_time
         
-        # Calculate approximate token details if usage metadata is missing
-        tokens = response.usage_metadata.candidates_token_count if hasattr(response, 'usage_metadata') and response.usage_metadata else len(response.text.split())
+        text_output = response.text
+        tokens = len(text_output.split())  # Fast metric estimator for word chunks
         tps = tokens / latency if latency > 0 else 0.0
         
         return {
@@ -56,7 +57,7 @@ def call_gemini_live(api_key, model_label, prompt):
             "latency": latency,
             "tps": tps,
             "tokens": tokens,
-            "response": response.text
+            "response": text_output
         }
     except Exception as e:
         return {"status": "error", "message": str(e)}
