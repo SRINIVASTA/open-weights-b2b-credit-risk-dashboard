@@ -15,7 +15,7 @@ def generate_performance_chart(latencies, throughputs):
 
 def generate_ledger_chart():
     """
-    Generates a flawless, fully-bounded Intramonth Ledger Simulation.
+    Generates a bug-free Intramonth Ledger Simulation.
     """
     np.random.seed(42)
     days = np.arange(1, 31)
@@ -23,10 +23,10 @@ def generate_ledger_chart():
     current_balance = 4500 
 
     for day in days:
-        # FIXED: Populated with real supplier bill outflow days
-        if day in: 
+        # Fixed: Explicit check using equality operators to avoid unclosed sequence bugs
+        if day == 1 or day == 15: 
             current_balance -= 65000  
-        elif day in range(7, 11) or day in range(24, 28):
+        elif (7 <= day <= 10) or (24 <= day <= 27):
             current_balance += np.random.randint(18000, 32000) 
         else:
             current_balance += np.random.randint(-4000, 5000) 
@@ -36,9 +36,9 @@ def generate_ledger_chart():
     fig = go.Figure()
 
     # Ledger plot line
-    fig.add_trace(go.Scatter(x=days, y=daily_balances, mode='lines+markers', name='Ledger Balance (INR)', line=dict(color='#d9534f', width=2)))
+    fig.add_trace(go.Scatter(x=list(days), y=daily_balances, mode='lines+markers', name='Ledger Balance (INR)', line=dict(color='#d9534f', width=2)))
     
-    # FIXED: Bound line values provided cleanly across the complete 30-day index sequence
+    # Reference Horizontal Lines
     fig.add_trace(go.Scatter(x=[1, 30], y=[adlb, adlb], mode='lines', name=f'Actual ADLB (INR {adlb:,.0f})', line=dict(color='#f0ad4e', dash='dash')))
     fig.add_trace(go.Scatter(x=[1, 30], y=[5000, 5000], mode='lines', name='Conservative Floor (INR 5,000)', line=dict(color='#5cb85c', dash='dot')))
 
