@@ -3,29 +3,20 @@ import plotly.graph_objects as go
 import numpy as np
 
 def generate_performance_chart(latencies, throughputs):
-    """
-    Generates comparative engine visualization bar charts.
-    """
     models = ['Qwen', 'GPT-OSS', 'Gemma 31B', 'Gemma 26B']
     fig = go.Figure()
     fig.add_trace(go.Bar(x=models, y=latencies, name='Latency (s)', marker_color='#d9534f'))
     fig.add_trace(go.Bar(x=models, y=throughputs, name='Throughput (TPS)', marker_color='#5cb85c'))
-    
-    # Corrected keyword parameter to barmode
     fig.update_layout(template='plotly_white', barmode='group', height=300)
     return fig
 
 def generate_ledger_chart():
-    """
-    Generates a flawless, bug-free Intramonth Ledger Simulation.
-    """
     np.random.seed(42)
     days = np.arange(1, 31)
     daily_balances = []
     current_balance = 4500 
 
     for day in days:
-        # FIXED: Populated the array with specific supplier payment days (1 and 15)
         if day in: 
             current_balance -= 65000  
         elif day in range(7, 11) or day in range(24, 28):
@@ -37,10 +28,7 @@ def generate_ledger_chart():
     adlb = np.mean(daily_balances)
     fig = go.Figure()
 
-    # Ledger plot line
     fig.add_trace(go.Scatter(x=days, y=daily_balances, mode='lines+markers', name='Ledger Balance (INR)', line=dict(color='#d9534f', width=2)))
-    
-    # FIXED: Added valid start and end day arrays [1, 30] to create solid horizontal reference lines
     fig.add_trace(go.Scatter(x=[1, 30], y=[adlb, adlb], mode='lines', name=f'Actual ADLB (INR {adlb:,.0f})', line=dict(color='#f0ad4e', dash='dash')))
     fig.add_trace(go.Scatter(x=[1, 30], y=[5000, 5000], mode='lines', name='Conservative Floor (INR 5,000)', line=dict(color='#5cb85c', dash='dot')))
 
@@ -48,7 +36,4 @@ def generate_ledger_chart():
     return fig
 
 def generate_pdf_report(execution_mode, report_text, labels, latencies, throughputs):
-    """
-    Returns PDF stream bytes for executive report distribution.
-    """
     return b"%PDF-1.4 Mock Executive Risk Report Asset Data Pipeline Stream"
